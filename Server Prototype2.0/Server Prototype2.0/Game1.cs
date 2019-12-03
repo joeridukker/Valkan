@@ -14,7 +14,11 @@ namespace Server_Prototype2._0
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Texture2D playerTex;
+
+
         Vector2 playerPosition = new Vector2();
+        Vector2 receivedPlayerPosition;
+        string action;
         Socket listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);  //create server socket
         IPEndPoint ipEnd = new IPEndPoint(IPAddress.Parse("192.168.2.6"), 9999); //ip of joeri's desktop, port is some random number 192.168.1.13 OR 192.168.2.6
 
@@ -23,6 +27,7 @@ namespace Server_Prototype2._0
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
+
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -39,38 +44,56 @@ namespace Server_Prototype2._0
             clientThread.Start();                                                                             //and start that shit
             clientNo++;
         }
+
         protected override void Update(GameTime gameTime)
         {
-            
-            //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            base.Update(gameTime);
         }
 
-        private static void ClientConnection(Socket clientSocket, int clNr)
+        private void ClientConnection(Socket clientSocket, int clNr)
         {
             //message
-            byte[] buffer = new byte[clientSocket.SendBufferSize];                                                 //client specifies buffer size
-
-            int readByte;
+            byte[] buffer = new byte[clientSocket.SendBufferSize];//client specifies buffer size
+            int pos;
+            int readByte; //a small number, number of bytes, constant value
             do
             {
-                //Receive
-                readByte = clientSocket.Receive(buffer);                                                           //store received data
+                //receive data
+                readByte = clientSocket.Receive(buffer); //store received data
 
-                //do stuff
-                byte[] rData = new byte[readByte];                                                                 //put received data in byte array
-                Array.Copy(buffer, rData, readByte);
-                Console.WriteLine("we got " + Encoding.UTF8.GetString(rData) + " from client" + clNr);             //write data received from client nr
+                //transfer received data over to member variables
+                byte[] rData = new byte[readByte]; //put received data in byte array
+                Array.Copy(buffer, rData, readByte); //get rid of unused bytes at the end
+                string[] stringarray = Encoding.UTF8.GetString(rData).Split(' '); //store parts in string array
+                receivedPlayerPosition = new Vector2(int.Parse(stringarray[0]), int.Parse(stringarray[1])); //put the first 2 parts in pos
+                action = stringarray[2]; //put the last part in action as string
 
-                //piggyback data
-                clientSocket.Send(new byte[4] { 33, 34, 2, 44 }); //some random text to send back. these are just some random symbols from utf8
+                //calculate new pos
+                if(action == "R")
+                {
+                    receivedPlayerPosition.X += 5;
+                }
+                if (action == "L")
+                {
+                    receivedPlayerPosition.X -= 5;
+                }
+                if (action == "U")
+                {
+                    receivedPlayerPosition.Y -= 5;
+                }
+                if (action == "D")
+                {
+                    receivedPlayerPosition.Y += 5;
+                }
+                playerPosition = receivedPlayerPosition;
 
+                //return player position
+                string sendData = playerPosition.X.ToString() + " " + playerPosition.Y.ToString(); //string = x,y
+                clientSocket.Send(Encoding.UTF8.GetBytes(sendData)); //send byte array of string above
+
+
+                Console.WriteLine("we got " + Encoding.UTF8.GetString(rData) + " from client" + clNr + "pos " + playerPosition);             //write data received from client nr
             } while (readByte > 0);
-
-            Console.WriteLine("Client disconnected");
-            Console.ReadKey();
         }
-
 
         protected override void Draw(GameTime gameTime)
         {
@@ -78,7 +101,6 @@ namespace Server_Prototype2._0
             spriteBatch.Begin();
             spriteBatch.Draw(playerTex, playerPosition, Color.White);
             spriteBatch.End();
-            base.Draw(gameTime);
         }
     }
 }

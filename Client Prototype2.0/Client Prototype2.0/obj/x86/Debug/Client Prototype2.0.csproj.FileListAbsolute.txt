@@ -21,3 +21,4 @@ C:\Users\joeri\source\repos\Client Prototype2.0\Client Prototype2.0\obj\x86\Debu
 C:\Users\joeri\source\repos\Client Prototype2.0\Client Prototype2.0\obj\x86\Debug\Client Prototype2.0.csproj.CopyComplete
 C:\Users\joeri\source\repos\Client Prototype2.0\Client Prototype2.0\obj\x86\Debug\Client Prototype2.0.exe
 C:\Users\joeri\source\repos\Client Prototype2.0\Client Prototype2.0\obj\x86\Debug\Client Prototype2.0.pdb
+C:\Users\joeri\source\repos\Client Prototype2.0\Client Prototype2.0\bin\Windows\x86\Debug\Content\player.xnb
